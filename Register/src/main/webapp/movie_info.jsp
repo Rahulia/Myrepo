@@ -16,14 +16,17 @@
                     <h3>Showtime Listings</h3>
                 </div>
                 <div class="card-body">
+                
                     <%
                         String movieid = request.getParameter("s");
+                        String userID = request.getParameter("userid");
                         Class.forName("oracle.jdbc.driver.OracleDriver");
                         Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "system", "raHULj69a");
                         PreparedStatement ps = connection.prepareStatement("SELECT * FROM Showtimes WHERE MovieID = ?");
                         ps.setString(1, movieid);
                         ResultSet rs = ps.executeQuery();
                     %>
+                    <h2>User ID: <%= userID  %></h2>
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -49,7 +52,7 @@
                                 <td><%= showTime %></td>
                                 <td>
                                     <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#updateShowtimeModal" data-showtimeid="<%= showtimeid %>" data-showdate="<%= showDate %>" data-showtime="<%= showTime %>">Update</button>
-                                    <a href="seat_selection.jsp?sid=<%= showtimeid %>&mid=<%= movid %>&hid=<%= hallid %>&showtime=<%= showTime %>" class="btn btn-danger btn-sm">BOOK</a>
+                                    <a href="display.jsp?sid=<%= showtimeid %>&userID=<%= userID %>&mid=<%= movid %>&hid=<%= hallid %>&showtime=<%= showTime %>" class="btn btn-danger btn-sm">BOOK</a>
                                 </td>
                             </tr>
                             <%

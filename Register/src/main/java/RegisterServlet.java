@@ -10,7 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-@WebServlet(name = "RegistaServlet", urlPatterns = { "/RegistaServlet" })
+@WebServlet("/RegisterServlet")
 public class RegisterServlet extends HttpServlet {
 
 
@@ -19,62 +19,35 @@ public class RegisterServlet extends HttpServlet {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-
-        String hallid = request.getParameter("hallid");
-        String zone = request.getParameter("zone");
-        String section = request.getParameter("section");
-        int rowno = Integer.parseInt(request.getParameter("rowno"));
-        int seatnumber = Integer.parseInt(request.getParameter("seatnumber"));
-        String seattype = request.getParameter("seattype");
-        double price = Double.parseDouble(request.getParameter("price"));
-        String status = request.getParameter("status");
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String firstName = request.getParameter("firstName");
+        String lastName = request.getParameter("lastName");
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
 
         Connection connection = null;
-        PreparedStatement preparedStatement = null;
+        PreparedStatement ps = null;
 
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
             connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "system", "raHULj69a");
 
-            String insertQuery = "INSERT INTO SeatMap (HallID, Zone, Section, RowNo, SeatNumber, SeatType, Price, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            preparedStatement = connection.prepareStatement(insertQuery);
-            preparedStatement.setString(1, hallid);
-            preparedStatement.setString(2, zone);
-            preparedStatement.setString(3, section);
-            preparedStatement.setInt(4, rowno);
-            preparedStatement.setInt(5, seatnumber);
-            preparedStatement.setString(6, seattype);
-            preparedStatement.setDouble(7, price);
-            preparedStatement.setString(8, status);
+            ps = connection.prepareStatement("INSERT INTO Uusers (FirstName, LastName, Email, Password) VALUES (?, ?, ?, ?)");
+            ps.setString(1, firstName);
+            ps.setString(2, lastName);
+            ps.setString(3, email);
+            ps.setString(4, password);
+            ps.executeUpdate();
 
-            int rowsInserted = preparedStatement.executeUpdate();
-
-            if (rowsInserted > 0) {
-                response.sendRedirect("Hall_Seatmap.jsp?hallid=" + hallid);
-            } else {
-                out.println("Error adding new seat map record!");
-            }
+            response.sendRedirect("user_homepage.jsp");
         } catch (Exception e) {
             e.printStackTrace();
-            out.println("Error: " + e.getMessage());
         } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+            try {
+                if (ps != null) ps.close();
+                if (connection != null) connection.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

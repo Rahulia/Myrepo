@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -17,37 +18,54 @@ public class LoginServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
         try {
-            
-        	Connection con = CommonConnection.getConnection();
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "system", "raHULj69a");
 
-            // Prepare SQL statement for login validation
-            String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
-            PreparedStatement ps = con.prepareStatement(sql);
+            // Check Uusers table
+            ps = connection.prepareStatement("SELECT * FROM Uusers WHERE Email = ? AND Password = ?");
             ps.setString(1, email);
-            ps.setString(2, password); // Assuming passwords are stored without hashing (not recommended)
-
-            // Execute the statement
-            ResultSet rs = ps.executeQuery();
+            ps.setString(2, password);
+            rs = ps.executeQuery();
 
             if (rs.next()) {
-                // Login successful
-                HttpSession session = request.getSession();
-                session.setAttribute("userEmail", email); // Store user email in session
-                response.sendRedirect("GymHome.jsp"); // Redirect to home page
+                // User found in Uusers table
+                int userID = rs.getInt("UserID");
+          
+                response.sendRedirect("user_homepage.jsp?userid="+userID);
             } else {
-                // Login failed
-                response.sendRedirect("login.jsp"); // Redirect to failure page
-            }
+                // Check Admins table
+                ps = connection.prepareStatement("SELECT * FROM Admins WHERE Email = ? AND Password = ?");
+                ps.setString(1, email);
+                ps.setString(2, password);
+                rs = ps.executeQuery();
 
+                if (rs.next()) {
+                    // User found in Admins table
+                    response.sendRedirect("admin_homepage.jsp?sid=<%= showtimeid %>");
+                } else {
+                    // User not found in either table
+                    response.sendRedirect("register.jsp");
+                }
+            }
         } catch (Exception e) {
-            e.printStackTrace(); // Handle exceptions properly in a production environment
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (connection != null) connection.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }

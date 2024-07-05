@@ -147,6 +147,14 @@
         </div>
         
         <div class="row">
+            <%
+    
+
+    String userID = request.getParameter("userid");
+    
+    
+%>
+<h2>User ID: <%= userID  %></h2>
             <% 
                 Connection connection = null;
                 Statement statement = null;
@@ -177,7 +185,7 @@
                         <iframe id="video_<%= videoId %>" class="movie-trailer" src="https://www.youtube.com/embed/<%= videoId %>?enablejsapi=1" frameborder="0" allowfullscreen></iframe>
                     </div>
                     <div class="card-footer text-center card-actions-bot">
-                        <a href="movie_info.jsp?s=<%=resultset.getInt("movieid") %>" class="btn btn-primary">BOOK</a>
+                        <a href="movie_info.jsp?s=<%=resultset.getInt("movieid") %>&userid=<%= userID %>" class="btn btn-primary">BOOK</a>
                     </div>
                 </div>
             </div>
